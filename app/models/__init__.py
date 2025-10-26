@@ -1,0 +1,10 @@
+__all__ = ["BaseModel",
+           "UserModel",
+           "ClassroomModel",
+           "CourseModel",
+           "DegreeModel",
+           "ExamModel",
+           "GroupModel",
+           "ScheduleModel",
+           "SubjectModel",
+           "TeacherModel"]

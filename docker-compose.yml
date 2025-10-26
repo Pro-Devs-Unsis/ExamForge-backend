@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  fastapi-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://fastapi_user:fastapi_password@mariadb:3306/fastapi_db
+      - SECRET_KEY=your-secret-key-change-in-production
+      - API_V1_STR=/api/v1
+      - PROJECT_NAME=FastAPI Local App
+    volumes:
+      - ./app:/app/app
+      - ./alembic:/app/alembic
+      - ./alembic.ini:/app/alembic.ini
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      fastapi_network:
+        ipv4_address: 132.18.53.90
+
+  mariadb:
+    image: mariadb:10.11
+    container_name: fastapi_mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=fastapi_db
+      - MYSQL_USER=fastapi_user
+      - MYSQL_PASSWORD=fastapi_password
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      fastapi_network:
+
+  # Optional: Add phpMyAdmin for database management
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: fastapi_phpmyadmin
+    environment:
+      - PMA_HOST=mariadb
+      - MYSQL_ROOT_PASSWORD=root_password
+    ports:
+      - "8080:80"
+    depends_on:
+      - mariadb
+    networks:
+      fastapi_network:
+
+networks:
+  fastapi_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 132.18.53.0/24
+
+volumes:
+  mariadb_data:
