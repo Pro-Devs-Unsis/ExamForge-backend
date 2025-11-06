@@ -46,7 +46,6 @@ services:
     networks:
       fastapi_network:
 
-  # Optional: Add phpMyAdmin for database management
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: fastapi_phpmyadmin
